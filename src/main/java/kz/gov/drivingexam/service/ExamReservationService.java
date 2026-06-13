@@ -100,7 +100,9 @@ public class ExamReservationService {
 
     public ReservationResponse cancel(Long id) {
         ExamReservation reservation = findById(id);
-
+        if (reservation.getStatus() == ReservationStatus.EXPIRED) {
+            throw new BusinessException("Нельзя отменить истёкшее бронирование");
+        }
         if (reservation.getStatus() == ReservationStatus.COMPLETED) {
             throw new BusinessException("Нельзя отменить завершённое бронирование");
         }

@@ -8,6 +8,8 @@ import kz.gov.drivingexam.enums.ExamType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -20,4 +22,5 @@ public interface ExamReservationRepository extends JpaRepository<ExamReservation
     Page<ExamReservation> findByStudentId(Long studentId, Pageable pageable);
     Page<ExamReservation> findByStudentIdAndExamType(Long studentId, ExamType examType, Pageable pageable);
     Page<ExamReservation> findByStudentIdAndStatus(Long studentId, ReservationStatus status, Pageable pageable);
+    List<ExamReservation> findByStatusAndExamDateTimeBefore(ReservationStatus status, LocalDateTime dateTime);
 }
