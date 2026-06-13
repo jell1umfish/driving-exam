@@ -4,6 +4,7 @@ import kz.gov.drivingexam.dto.request.CreateReservationRequest;
 import kz.gov.drivingexam.dto.response.ReservationResponse;
 import kz.gov.drivingexam.entity.ExamReservation;
 import kz.gov.drivingexam.entity.Student;
+import kz.gov.drivingexam.enums.ExamType;
 import kz.gov.drivingexam.enums.ReservationStatus;
 import kz.gov.drivingexam.exception.BusinessException;
 import kz.gov.drivingexam.exception.ResourceNotFoundException;
@@ -27,7 +28,12 @@ public class ExamReservationService {
                 request.getStudentId(), ReservationStatus.ACTIVE)) {
             throw new BusinessException("У студента уже есть активное бронирование");
         }
-
+        if (request.getExamType() == ExamType.PRACTICE) {
+            if (!reservationRepository.existsByStudentIdAndExamTypeAndStatus(
+                    request.getStudentId(), ExamType.THEORY, ReservationStatus.COMPLETED)) {
+                throw new BusinessException("Нельзя записаться на практику без сданного теоретического экзамена");
+            }
+        }
         ExamReservation reservation = ExamReservation.builder()
                 .student(student)
                 .examType(request.getExamType())
@@ -42,7 +48,24 @@ public class ExamReservationService {
         return toResponse(findById(id));
     }
 
-    public Page<ReservationResponse> getAll(Pageable pageable) {
+    public Page<ReservationResponse> getAll(ReservationStatus status, ExamType examType, Long studentId, Pageable pageable) {
+        if (studentId != null && examType != null) {
+            return reservationRepository.findByStudentIdAndExamType(studentId, examType, pageable)
+                    .map(this::toResponse);
+        }
+        if (studentId != null && status != null) {
+            return reservationRepository.findByStudentIdAndStatus(studentId, status, pageable)
+                    .map(this::toResponse);
+        }
+        if (studentId != null) {
+            return reservationRepository.findByStudentId(studentId, pageable).map(this::toResponse);
+        }
+        if (examType != null) {
+            return reservationRepository.findByExamType(examType, pageable).map(this::toResponse);
+        }
+        if (status != null) {
+            return reservationRepository.findByStatus(status, pageable).map(this::toResponse);
+        }
         return reservationRepository.findAll(pageable).map(this::toResponse);
     }
 
@@ -52,6 +75,21 @@ public class ExamReservationService {
         reservation.setExamType(request.getExamType());
         reservation.setExamDateTime(request.getExamDateTime());
 
+        return toResponse(reservationRepository.save(reservation));
+    }
+
+    public ReservationResponse complete(Long id) {
+        ExamReservation reservation = findById(id);
+
+        if (reservation.getStatus() == ReservationStatus.CANCELLED) {
+            throw new BusinessException("Нельзя завершить отменённое бронирование");
+        }
+
+        if (reservation.getStatus() == ReservationStatus.COMPLETED) {
+            throw new BusinessException("Бронирование уже завершено");
+        }
+
+        reservation.setStatus(ReservationStatus.COMPLETED);
         return toResponse(reservationRepository.save(reservation));
     }
 

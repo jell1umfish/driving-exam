@@ -37,7 +37,15 @@ public class StudentService {
         return toResponse(findById(id));
     }
 
-    public Page<StudentResponse> getAll(Pageable pageable) {
+    public Page<StudentResponse> getAll(String firstName, String lastName, Pageable pageable) {
+        if (firstName != null && !firstName.isEmpty()) {
+            return studentRepository.findByFirstNameContainingIgnoreCase(firstName, pageable)
+                    .map(this::toResponse);
+        }
+        if (lastName != null && !lastName.isEmpty()) {
+            return studentRepository.findByLastNameContainingIgnoreCase(lastName, pageable)
+                    .map(this::toResponse);
+        }
         return studentRepository.findAll(pageable).map(this::toResponse);
     }
 

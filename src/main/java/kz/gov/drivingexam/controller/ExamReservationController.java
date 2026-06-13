@@ -3,6 +3,8 @@ package kz.gov.drivingexam.controller;
 import jakarta.validation.Valid;
 import kz.gov.drivingexam.dto.request.CreateReservationRequest;
 import kz.gov.drivingexam.dto.response.ReservationResponse;
+import kz.gov.drivingexam.enums.ExamType;
+import kz.gov.drivingexam.enums.ReservationStatus;
 import kz.gov.drivingexam.service.ExamReservationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,8 +31,12 @@ public class ExamReservationController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<ReservationResponse>> getAll(Pageable pageable) {
-        return ResponseEntity.ok(reservationService.getAll(pageable));
+    public ResponseEntity<Page<ReservationResponse>> getAll(
+            @RequestParam(required = false) ReservationStatus status,
+            @RequestParam(required = false) ExamType examType,
+            @RequestParam(required = false) Long studentId,
+            Pageable pageable) {
+        return ResponseEntity.ok(reservationService.getAll(status, examType, studentId, pageable));
     }
 
     @PutMapping("/{id}")
@@ -48,5 +54,9 @@ public class ExamReservationController {
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<ReservationResponse> cancel(@PathVariable Long id) {
         return ResponseEntity.ok(reservationService.cancel(id));
+    }
+    @PatchMapping("/{id}/complete")
+    public ResponseEntity<ReservationResponse> complete(@PathVariable Long id) {
+        return ResponseEntity.ok(reservationService.complete(id));
     }
 }

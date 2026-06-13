@@ -30,8 +30,11 @@ public class StudentController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<StudentResponse>> getAll(Pageable pageable) {
-        return ResponseEntity.ok(studentService.getAll(pageable));
+    public ResponseEntity<Page<StudentResponse>> getAll(
+            @RequestParam(required = false) String firstName,
+            @RequestParam(required = false) String lastName,
+            Pageable pageable) {
+        return ResponseEntity.ok(studentService.getAll(firstName, lastName, pageable));
     }
 
     @PutMapping("/{id}")
