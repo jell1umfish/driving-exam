@@ -8,6 +8,7 @@ import lombok.Data;
 public class CreateStudentRequest {
 
     @NotBlank(message = "ИИН обязателен")
+    @ValidIin
     @Pattern(regexp = "\\d{12}", message = "ИИН должен содержать ровно 12 цифр")
     private String iin;
 
