@@ -94,7 +94,12 @@ public class ExamReservationService {
     }
 
     public void delete(Long id) {
-        findById(id);
+        ExamReservation reservation = findById(id);
+
+        if (reservation.getStatus() == ReservationStatus.COMPLETED) {
+            throw new BusinessException("Нельзя удалить завершённое бронирование");
+        }
+
         reservationRepository.deleteById(id);
     }
 
